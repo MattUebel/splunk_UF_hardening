@@ -7,7 +7,7 @@ if [ "$EUID" -ne 0 ]
 fi
 
 # install splunk, potentially needs customized depending on your environment
-yum install splunkforwarder
+yum -y install splunkforwarder
 
 # enable boot-start, set to run as user splunk
 /opt/splunkforwarder/bin/splunk enable boot-start -user splunk --accept-license --answer-yes --no-prompt
