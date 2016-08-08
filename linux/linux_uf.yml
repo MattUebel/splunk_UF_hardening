@@ -1,0 +1,48 @@
+---
+- hosts: all
+  become: yes
+# become_user: user
+  tasks:
+
+  - name: install splunk, potentially needs customized depending on your environment
+    yum: name={{ item }} state=present
+    with_items:
+      - splunkforwarder
+
+  - stat: path=/etc/init.d/splunk
+    register: splunk_init
+
+  - name: enable boot-start, set to run as user splunk
+    ignore_errors: yes
+    shell: /opt/splunkforwarder/bin/splunk enable boot-start -user splunk --accept-license --answer-yes --no-prompt
+    when: splunk_init.stat.exists == False
+
+  - name: create /opt/splunkforwarder/etc/apps/UF-TA-killrest/local
+    file: path=/opt/splunkforwarder/etc/apps/UF-TA-killrest/local state=directory mode=0755 owner=splunk group=splunk
+
+  - name: create /opt/splunkforwarder/etc/apps/UF-TA-killrest/local/server.conf
+    file: path=/opt/splunkforwarder/etc/apps/UF-TA-killrest/local/server.conf state=touch mode=0644 owner=splunk group=splunk
+
+  - name: /opt/splunkforwarder perms recursive
+    file: path=/opt/splunkforwarder state=directory owner=splunk group=splunk recurse=yes
+
+  - name: /opt/splunkforwarder/etc/splunk-launch.conf perms
+    file: path=/opt/splunkforwarder/etc/splunk-launch.conf state=touch mode=0644 owner=root group=splunk
+
+  - name: disable management port
+    blockinfile: dest=/opt/splunkforwarder/etc/apps/UF-TA-killrest/local/server.conf content="[httpServer]\ndisableDefaultPort = true"
+
+  - name: change password from default. If fail, already changed
+    ignore_errors: yes
+    shell: /opt/splunkforwarder/bin/splunk edit user admin -password `head -c 500 /dev/urandom | sha256sum | base64 | head -c 16 ; echo` -auth admin:changeme
+
+  - name: ensure user splunk can read /var/log
+    acl: name=/var/log entity=splunk etype=user permissions=r-x default=yes state=present
+
+  - name: auditd.conf set log_group = splunk
+    replace: dest=/etc/audit/auditd.conf regexp='log_group = root' replace='log_group = splunk' backup=yes
+
+  - name: set perms for /var/log/audit
+    file: path=/var/log/audit state=directory recurse=yes group=splunk
+    file: path=/var/log/audit state=directory mode=0640 recurse=yes
+    file: path=/var/log/audit state=directory mode=0750
