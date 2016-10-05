@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Check if OS is related to Redhat
+if [[ ! -f /etc/redhat-release ]]; then
+  echo "This script is not supported for this Operating System";
+  exit 1; else
+  echo "RedHat Compatible OS, Moving on...."
+fi
+
 # check for root
 if [ "$EUID" -ne 0 ]
   then echo "Please run as root"
