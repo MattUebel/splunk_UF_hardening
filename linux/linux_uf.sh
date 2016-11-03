@@ -11,10 +11,6 @@ if [[ ! -f /etc/redhat-release ]]; then
   echo "RedHat Compatible OS, Moving on...."
 fi
 
-# Set RedHat Version Variable
-EL_VERSION=`rpm -qa \*-release | grep -Ei "oracle|redhat|centos" | cut -d"-" -f3 | cut -c 1`
-OS_VENDOR=`grep ^NAME /etc/os-release | awk -F '[" ]' '{print $2}'`
-
 # check for root
 if [ "$EUID" -ne 0 ]
   then echo "Please run as root"
