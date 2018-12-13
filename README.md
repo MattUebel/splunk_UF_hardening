@@ -7,10 +7,10 @@ This repo contains scripts to automate certain aspects of the Splunk Universal F
 The windows installation script installs the forwarder in low privilage mode. It does this while creating a local user "splunk" with a random password that is shared with the splunk admin account.
 
 The user portion could be modified pertaining to your environment, as long as that user has the following privilages:
-SeServiceLogonRight
-SeSecurityPrivilege
-SeSystemProfilePrivilege
-SeImpersonatePrivilege
+ - SeServiceLogonRight  
+ - SeSecurityPrivilege  
+ - SeSystemProfilePrivilege  
+ - SeImpersonatePrivilege  
 
 It does not do any further configuration other than the base install along with a disabling of the mangement interface.
 
